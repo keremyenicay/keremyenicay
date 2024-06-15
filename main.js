@@ -5,7 +5,7 @@
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
 // @include      /^https?:\/\/(www\.)?amazon\.com\.au\/.*/
-// @grant        GM_xmlhttpRequest
+// @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
 
@@ -100,41 +100,30 @@
     }
 
     // ASIN'leri arka planda çekmek için fonksiyon
-    function fetchASINsInBackground(url) {
-        return new Promise((resolve, reject) => {
-            GM_xmlhttpRequest({
-                method: 'GET',
-                url: url,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                onload: function(response) {
-                    if (response.status === 200) {
-                        let htmlString = response.responseText;
-                        let parser = new DOMParser();
-                        let doc = parser.parseFromString(htmlString, 'text/html');
-                        let productElements = doc.querySelectorAll('div[data-asin]');
-                        let productData = [];
+    async function fetchASINsInBackground(url) {
+        try {
+            let response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let htmlString = await response.text();
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(htmlString, 'text/html');
+            let productElements = doc.querySelectorAll('div[data-asin]');
+            let productData = [];
 
-                        productElements.forEach(element => {
-                            let asin = getASIN(element);
-                            if (asin) {
-                                let productName = getProductName(element);
-                                productData.push({ asin, productName });
-                            }
-                        });
-
-                        resolve(productData);
-                    } else {
-                        reject(new Error(`Failed to fetch ASINs. Status Code: ${response.status}`));
-                    }
-                },
-                onerror: function(error) {
-                    reject(error);
+            productElements.forEach(element => {
+                let asin = getASIN(element);
+                if (asin) {
+                    let productName = getProductName(element);
+                    productData.push({ asin, productName });
                 }
             });
-        });
+
+            return productData;
+        } catch (error) {
+            throw new Error(`Error fetching ASINs: ${error.message}`);
+        }
     }
 
     // Buton oluşturma ve sayfaya ekleme
