@@ -29,6 +29,18 @@
         }
     }
 
+    // ASIN'leri txt olarak kaydet
+    function saveAsinToFile(asins) {
+        let asinText = asins.join('\n');
+        let blob = new Blob([asinText], { type: 'text/plain' });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = 'asins.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
     // Verileri ekranda göster
     function displayData(productData) {
         // Yeni bir div oluştur
@@ -45,38 +57,31 @@
         popupContainer.style.zIndex = '1000';
         popupContainer.style.textAlign = 'center';
 
-        // ASIN bilgilerini ve ürün adlarını içeren tabloyu oluştur
-        let table = document.createElement('table');
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-
-        // Tablo başlıkları
-        let headerRow = document.createElement('tr');
-        let asinHeader = document.createElement('th');
-        asinHeader.textContent = 'ASIN';
-        asinHeader.style.border = '1px solid #ddd';
-        let productNameHeader = document.createElement('th');
-        productNameHeader.textContent = 'Ürün Adı';
-        productNameHeader.style.border = '1px solid #ddd';
-        headerRow.appendChild(asinHeader);
-        headerRow.appendChild(productNameHeader);
-        table.appendChild(headerRow);
-
-        // ASIN bilgileri ve ürün adlarını listele
-        productData.forEach(item => {
-            let row = document.createElement('tr');
-            let asinCell = document.createElement('td');
-            asinCell.textContent = item.asin;
-            asinCell.style.border = '1px solid #ddd';
-            let productNameCell = document.createElement('td');
-            productNameCell.textContent = item.productName;
-            productNameCell.style.border = '1px solid #ddd';
-            row.appendChild(asinCell);
-            row.appendChild(productNameCell);
-            table.appendChild(row);
+        // ASIN bilgilerini içeren listeyi oluştur
+        let asins = productData.map(item => item.asin);
+        let asinList = document.createElement('ul');
+        asins.forEach(asin => {
+            let listItem = document.createElement('li');
+            listItem.textContent = asin;
+            asinList.appendChild(listItem);
         });
 
-        popupContainer.appendChild(table);
+        popupContainer.appendChild(asinList);
+
+        // Kaydetme butonu oluştur
+        let saveButton = document.createElement('button');
+        saveButton.textContent = 'Kaydet';
+        saveButton.style.backgroundColor = '#4CAF50';
+        saveButton.style.color = 'white';
+        saveButton.style.padding = '10px 20px';
+        saveButton.style.border = 'none';
+        saveButton.style.cursor = 'pointer';
+        saveButton.style.borderRadius = '5px';
+        saveButton.addEventListener('click', function() {
+            saveAsinToFile(asins);
+        });
+
+        popupContainer.appendChild(saveButton);
 
         // Kapatma butonu oluştur
         let closeButton = document.createElement('button');
