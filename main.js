@@ -4,7 +4,7 @@
 // @version      8.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
-// @include      /^https?:\/\/(www\.)?amazon\.com\.au\/.*/
+// @include      /^https?:\/\/(?:www\.)?amazon\.(com|co\.uk|de|fr|es|it|com\.au|nl|ca|in|co\.jp|com\.mx|com\.br|cn)\/.*/i
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
@@ -157,6 +157,24 @@
                     displayData(productData);
                 } else {
                     console.error("ASIN veya ürün adı bulunamadı.");
+                }
+
+                // Diğer sayfalardaki ürünlerin ASIN'lerini arka planda çek
+                let nextPageButton = doc.querySelector('.a-pagination .a-last');
+                if (nextPageButton) {
+                    let nextPageURL = new URL(nextPageButton.href);
+                    let nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
+                    while (nextPageButton && nextURL !== currentURL) {
+                        let nextPageData = await fetchASINsInBackground(nextURL);
+                        if (nextPageData.length > 0) {
+                            displayData(nextPageData);
+                        }
+                        nextPageButton = doc.querySelector('.a-pagination .a-last');
+                        if (nextPageButton) {
+                            nextPageURL = new URL(nextPageButton.href);
+                            nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Arka planda ASIN bilgileri çekilirken hata oluştu:", error);
