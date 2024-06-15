@@ -23,6 +23,9 @@
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
+        // Konsola mesaj yazdır
+        console.log('Button created and added to the page.');
+
         // Butona tıklama olayı ekle
         button.addEventListener('click', function() {
             fetchData();
@@ -31,6 +34,8 @@
 
     // ASIN ve ürün adını alıp konsola yazdırma
     function fetchData() {
+        console.log('Button clicked.');
+
         let asin = getASIN();
         let productName = getProductName();
 
