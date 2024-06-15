@@ -13,23 +13,19 @@
     'use strict';
 
     // ASIN ve ürün adını al
-    function getASIN() {
-        let asinElement = document.querySelector("input#ASIN");
-        if (asinElement) {
-            return asinElement.value;
+    function getASIN(element) {
+        if (element) {
+            return element.getAttribute('data-asin') || 'ASIN not found';
         } else {
-            console.error("ASIN element not found.");
-            return null;
+            return 'ASIN element not found';
         }
     }
 
-    function getProductName() {
-        let productTitleElement = document.querySelector("span#productTitle");
-        if (productTitleElement) {
-            return productTitleElement.textContent.trim();
+    function getProductName(element) {
+        if (element) {
+            return element.querySelector('h2')?.textContent.trim() || 'Product name not found';
         } else {
-            console.error("Product title element not found.");
-            return null;
+            return 'Product element not found';
         }
     }
 
@@ -80,11 +76,17 @@
         // Butona tıklama olayı ekle
         button.addEventListener('click', function() {
             // ASIN ve ürün adını al
-            let asin = getASIN();
-            let productName = getProductName();
+            let productElements = document.querySelectorAll('div[data-asin]');
+            let productData = [];
 
-            if (asin && productName) {
-                displayData(asin, productName);
+            productElements.forEach(element => {
+                let asin = getASIN(element);
+                let productName = getProductName(element);
+                productData.push({ asin, productName });
+            });
+
+            if (productData.length > 0) {
+                displayData(productData);
             } else {
                 console.error("ASIN veya ürün adı bulunamadı.");
             }
