@@ -23,25 +23,19 @@
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
-        // Konsola mesaj yazdır
-        console.log('Button created and added to the page.');
-
         // Butona tıklama olayı ekle
         button.addEventListener('click', function() {
             fetchData();
         });
     }
 
-    // ASIN ve ürün adını alıp konsola yazdırma
+    // ASIN ve ürün adını alıp ekrana yazdırma
     function fetchData() {
-        console.log('Button clicked.');
-
         let asin = getASIN();
         let productName = getProductName();
 
         if (asin && productName) {
-            console.log(`ASIN: ${asin}`);
-            console.log(`Product Name: ${productName}`);
+            displayData(asin, productName);
         } else {
             console.error("ASIN veya ürün adı bulunamadı.");
         }
@@ -65,6 +59,26 @@
             productName = productElement.textContent.trim();
         }
         return productName;
+    }
+
+    // Verileri ekrana yazdırma
+    function displayData(asin, productName) {
+        // Ekrana yazdır
+        let dataContainer = document.createElement('div');
+        dataContainer.style.position = 'fixed';
+        dataContainer.style.top = '50px';
+        dataContainer.style.right = '10px';
+        dataContainer.style.backgroundColor = '#f0f0f0';
+        dataContainer.style.padding = '10px';
+        dataContainer.style.border = '1px solid #ccc';
+        dataContainer.style.borderRadius = '5px';
+        dataContainer.style.zIndex = 1000;
+
+        let html = `<p><strong>ASIN:</strong> ${asin}</p>`;
+        html += `<p><strong>Product Name:</strong> ${productName}</p>`;
+
+        dataContainer.innerHTML = html;
+        document.body.appendChild(dataContainer);
     }
 
     // Sayfa yüklendiğinde butonu oluştur
