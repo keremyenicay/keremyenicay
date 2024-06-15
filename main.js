@@ -146,4 +146,4 @@ function createButton() {
 window.addEventListener('load', function() {
     createButton();
 });
-
+})();
