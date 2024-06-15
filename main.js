@@ -5,7 +5,7 @@
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
 // @include      /^https?:\/\/(www\.)?amazon\.com\.au\/.*/
-// @grant        GM_download
+// @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
 
@@ -29,8 +29,8 @@
         }
     }
 
-    // Verileri ekranda göster
-    function displayData(productData) {
+    // ASIN bilgilerini ekranda göster
+    function displayASIN(productData) {
         // Yeni bir div oluştur
         let popupContainer = document.createElement('div');
         popupContainer.id = 'popupContainer';
@@ -54,44 +54,25 @@
             popupContainer.remove();
         });
 
-        // Kaydetme butonu oluştur
-        let saveButton = document.createElement('button');
-        saveButton.textContent = 'Kaydet';
-        saveButton.style.backgroundColor = '#4CAF50';
-        saveButton.style.color = 'white';
-        saveButton.style.padding = '10px 20px';
-        saveButton.style.border = 'none';
-        saveButton.style.cursor = 'pointer';
-        saveButton.style.borderRadius = '5px';
-        saveButton.addEventListener('click', function() {
-            saveData(productData);
-            popupContainer.remove();
+        // ASIN listesini oluştur
+        let asinList = document.createElement('ul');
+        asinList.style.listStyleType = 'none';
+        asinList.style.padding = '0';
+        asinList.style.textAlign = 'left';
+
+        // ASIN verilerini listeye ekle
+        productData.forEach(item => {
+            let listItem = document.createElement('li');
+            listItem.textContent = `ASIN: ${item.asin} - Ürün Adı: ${item.productName}`;
+            asinList.appendChild(listItem);
         });
 
-        // Butonları div içine ekle
+        // Popup içeriğini düzenle
         popupContainer.appendChild(closeButton);
-        popupContainer.appendChild(saveButton);
+        popupContainer.appendChild(asinList);
 
         // Popup penceresini sayfaya ekle
         document.body.appendChild(popupContainer);
-    }
-
-    // Verileri kaydetmek için fonksiyon
-    function saveData(productData) {
-        // ASIN bilgilerini metin dosyasına kaydet
-        let asinText = productData.map(item => item.asin).join('\n');
-        GM_download({
-            url: 'data:text/plain;charset=utf-8,' + encodeURIComponent(asinText),
-            name: 'asin_list.txt',
-            onload: function() {
-                console.log('ASIN listesi başarıyla indirildi.');
-                alert('ASIN listesi başarıyla indirildi.');
-            },
-            onerror: function(error) {
-                console.error('ASIN listesi indirilirken hata oluştu:', error);
-                alert('ASIN listesi indirilirken hata oluştu.');
-            }
-        });
     }
 
     // Buton oluşturma ve sayfaya ekleme
@@ -118,37 +99,10 @@
 
         // Butona tıklama olayı ekle
         button.addEventListener('click', async function() {
-            // Kategori seçicisiyle ürünleri çek
-            let categoryElement = document.querySelector("#departments > ul > span > span:nth-child(3)");
-            if (!categoryElement) {
-                console.error('Kategori bulunamadı.');
-                return;
-            }
+            // ASIN ve ürün adını al
+            let productElements = document.querySelectorAll('div[data-asin]');
+            let productData = [];
 
-            // Kategorideki ürünleri arka planda çek
-            let categoryURL = categoryElement.querySelector('a').href;
-            let productData = await scrapeCategoryProducts(categoryURL);
-            
-            if (productData.length > 0) {
-                displayData(productData);
-            } else {
-                console.error("Kategoride ürün bulunamadı.");
-            }
-        });
-    }
-
-    // Kategori sayfasından ürün ASIN bilgilerini çekme fonksiyonu
-    async function scrapeCategoryProducts(url) {
-        let productData = [];
-
-        try {
-            // Kategori sayfasını fetch ile al
-            let response = await fetch(url);
-            let html = await response.text();
-            let doc = new DOMParser().parseFromString(html, 'text/html');
-
-            // ASIN bilgilerini çek
-            let productElements = doc.querySelectorAll('div[data-asin]');
             productElements.forEach(element => {
                 let asin = getASIN(element);
                 if (asin) {
@@ -156,11 +110,13 @@
                     productData.push({ asin, productName });
                 }
             });
-        } catch (error) {
-            console.error('Hata oluştu:', error);
-        }
 
-        return productData;
+            if (productData.length > 0) {
+                displayASIN(productData);
+            } else {
+                console.error("ASIN veya ürün adı bulunamadı.");
+            }
+        });
     }
 
     // Sayfa yüklendiğinde butonu oluştur
