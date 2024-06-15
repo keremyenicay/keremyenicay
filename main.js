@@ -30,78 +30,58 @@
     }
 
     // Verileri ekranda göster
-function displayData(productData) {
-    // Yeni bir pencere aç
-    let popupWindow = window.open('', 'Amazon Product Data', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    function displayData(productData) {
+        // Yeni bir div oluştur
+        let popupContainer = document.createElement('div');
+        popupContainer.id = 'popupContainer';
+        popupContainer.style.position = 'fixed';
+        popupContainer.style.top = '50%';
+        popupContainer.style.left = '50%';
+        popupContainer.style.transform = 'translate(-50%, -50%)';
+        popupContainer.style.backgroundColor = '#fff';
+        popupContainer.style.padding = '20px';
+        popupContainer.style.border = '1px solid #ccc';
+        popupContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
+        popupContainer.style.zIndex = '1000';
+        popupContainer.style.textAlign = 'center';
 
-    // Başlık ve içerik oluştur
-    let content = `
-        <html>
-        <head>
-            <title>Amazon Product Data</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    padding: 20px;
-                }
-                h1 {
-                    text-align: center;
-                    margin-bottom: 20px;
-                }
-                .data-table {
-                    display: grid;
-                    grid-template-columns: 1fr 2fr;
-                    gap: 10px;
-                }
-                .data-table .column {
-                    padding: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 5px;
-                    background-color: #f9f9f9;
-                    overflow-y: auto;
-                    max-height: 500px;
-                }
-                .data-table h2 {
-                    text-align: center;
-                    margin-bottom: 10px;
-                }
-                .data-table ul {
-                    list-style: none;
-                    padding: 0;
-                    margin: 0;
-                }
-                .data-table li {
-                    margin-bottom: 5px;
-                    padding: 5px;
-                    border-bottom: 1px solid #ddd;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Amazon Ürün Bilgileri</h1>
-            <div class="data-table">
-                <div class="column">
-                    <h2>ASIN</h2>
-                    <ul>
-                        ${productData.map(item => `<li>${item.asin}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="column">
-                    <h2>Ürün Adı</h2>
-                    <ul>
-                        ${productData.map(item => `<li>${item.productName}</li>`).join('')}
-                    </ul>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
+        // Kapatma butonu oluştur
+        let closeButton = document.createElement('button');
+        closeButton.textContent = 'Kapat';
+        closeButton.style.marginRight = '10px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.addEventListener('click', function() {
+            popupContainer.remove();
+        });
 
-    // Pencere içeriğini yaz
-    popupWindow.document.write(content);
-}
+        // Kaydetme butonu oluştur
+        let saveButton = document.createElement('button');
+        saveButton.textContent = 'Kaydet';
+        saveButton.style.backgroundColor = '#4CAF50';
+        saveButton.style.color = 'white';
+        saveButton.style.padding = '10px 20px';
+        saveButton.style.border = 'none';
+        saveButton.style.cursor = 'pointer';
+        saveButton.style.borderRadius = '5px';
+        saveButton.addEventListener('click', function() {
+            saveData(productData);
+            popupContainer.remove();
+        });
 
+        // Butonları div içine ekle
+        popupContainer.appendChild(closeButton);
+        popupContainer.appendChild(saveButton);
 
+        // Popup penceresini sayfaya ekle
+        document.body.appendChild(popupContainer);
+    }
+
+    // Verileri kaydetmek için fonksiyon
+    function saveData(productData) {
+        // Burada kaydetme işlemlerini yapabilirsiniz
+        console.log('Kaydedilen veriler:', productData);
+        alert('Veriler başarıyla kaydedildi!');
+    }
 
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
@@ -126,7 +106,7 @@ function displayData(productData) {
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             // ASIN ve ürün adını al
             let productElements = document.querySelectorAll('div[data-asin]');
             let productData = [];
