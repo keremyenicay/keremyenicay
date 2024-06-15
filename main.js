@@ -1,32 +1,49 @@
+// ==UserScript==
+// @name         Amazon ASIN ADAM Veri Kazıyıcı by Adnan
+// @namespace    http://tampermonkey.net/
+// @version      8.0
+// @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
+// @author       Adnan Gökmen - Instagram: @adnangokmen_
+// @include      /^((https?:\/\/(?:www\.amazon\..*\/.*)))$/
+// @grant        none
+// @require      https://code.jquery.com/jquery-3.6.0.min.js
+// ==/UserScript==
+
 (function() {
     'use strict';
 
-    // Buton oluşturma ve sayfaya ekleme
-    function createButton() {
-        // Buton oluştur
-        let button = document.createElement('button');
-        button.id = 'fetchDataButton';
-        button.textContent = 'Fetch ASIN Data';
-        
-        // Buton stilini ayarla
-        button.style.position = 'fixed';
-        button.style.top = '10px';
-        button.style.right = '10px';
-        button.style.padding = '10px';
-        button.style.backgroundColor = '#ff9900';
-        button.style.color = '#fff';
-        button.style.border = 'none';
-        button.style.borderRadius = '5px';
-        button.style.zIndex = 1000;
-        button.style.cursor = 'pointer';
-        
-        // Butonu sayfaya ekle
-        document.body.appendChild(button);
+    // Lisans kodu doğrulama işlevi
+    function validateLicenseCode(enteredCode) {
+        // Gerçek uygulamada lisans kodlarını bir veritabanında saklamanız veya bir servisten doğrulamanız gerekebilir.
+        let validCodes = ['ABC123', 'XYZ456', '123ABC']; // Örnek geçerli lisans kodları
 
-        // Butona tıklama olayı ekle
-        button.addEventListener('click', function() {
-            showLicenseModal();
-        });
+        return validCodes.includes(enteredCode);
+    }
+
+    // ASIN ve ürün adını al
+    function getASIN() {
+        let asinElement = document.querySelector("input#ASIN");
+        if (asinElement) {
+            return asinElement.value;
+        } else {
+            console.error("ASIN element not found.");
+            return null;
+        }
+    }
+
+    function getProductName() {
+        let productTitleElement = document.querySelector("span#productTitle");
+        if (productTitleElement) {
+            return productTitleElement.textContent.trim();
+        } else {
+            console.error("Product title element not found.");
+            return null;
+        }
+    }
+
+    // Verileri ekranda göster
+    function displayData(asin, productName) {
+        alert(`ASIN: ${asin}\nProduct Name: ${productName}`);
     }
 
     // Lisans kodu girişi için modal gösterme
@@ -82,20 +99,28 @@
         submitButton.addEventListener('click', function() {
             let licenseCode = document.getElementById('licenseInput').value;
             if (licenseCode.trim() !== '') {
-                // Lisans kodu doğrulaması yapılabilir, burada sadece konsola yazdırıyoruz
-                console.log('License code entered:', licenseCode);
+                // Lisans kodu doğrulaması yap
+                let isValid = validateLicenseCode(licenseCode);
 
-                // Lisans kodu girişini kapat
-                closeModal();
-                
-                // ASIN ve ürün adını al ve göster
-                let asin = getASIN();
-                let productName = getProductName();
+                if (isValid) {
+                    // Lisans kodu geçerliyse devam et
+                    console.log('Valid license code:', licenseCode);
 
-                if (asin && productName) {
-                    displayData(asin, productName);
+                    // Lisans kodu girişini kapat
+                    closeModal();
+                    
+                    // ASIN ve ürün adını al ve göster
+                    let asin = getASIN();
+                    let productName = getProductName();
+
+                    if (asin && productName) {
+                        displayData(asin, productName);
+                    } else {
+                        console.error("ASIN veya ürün adı bulunamadı.");
+                    }
                 } else {
-                    console.error("ASIN veya ürün adı bulunamadı.");
+                    // Lisans kodu geçerli değilse hata mesajı göster
+                    alert('Invalid license code. Please try again.');
                 }
             } else {
                 alert('Please enter a valid license code.');
@@ -114,52 +139,40 @@
         document.body.appendChild(modalContainer);
     }
 
-    // ASIN ve ürün adını al
-    function getASIN() {
-        let asin = null;
-        let asinElement = document.querySelector("input#ASIN");
-        if (asinElement) {
-            asin = asinElement.value;
-        }
-        return asin;
-    }
-
-    // Ürün adını al
-    function getProductName() {
-        let productName = null;
-        let productElement = document.getElementById("productTitle");
-        if (productElement) {
-            productName = productElement.textContent.trim();
-        }
-        return productName;
-    }
-
-    // Verileri ekrana yazdırma
-    function displayData(asin, productName) {
-        // Ekrana yazdır
-        let dataContainer = document.createElement('div');
-        dataContainer.style.position = 'fixed';
-        dataContainer.style.top = '50px';
-        dataContainer.style.right = '10px';
-        dataContainer.style.backgroundColor = '#f0f0f0';
-        dataContainer.style.padding = '10px';
-        dataContainer.style.border = '1px solid #ccc';
-        dataContainer.style.borderRadius = '5px';
-        dataContainer.style.zIndex = 1000;
-
-        let html = `<p><strong>ASIN:</strong> ${asin}</p>`;
-        html += `<p><strong>Product Name:</strong> ${productName}</p>`;
-
-        dataContainer.innerHTML = html;
-        document.body.appendChild(dataContainer);
-    }
-
     // Modalı kapatma
     function closeModal() {
         let modal = document.getElementById('licenseModal');
         if (modal) {
             modal.remove();
         }
+    }
+
+    // Buton oluşturma ve sayfaya ekleme
+    function createButton() {
+        // Buton oluştur
+        let button = document.createElement('button');
+        button.id = 'fetchDataButton';
+        button.textContent = 'Fetch ASIN Data';
+        
+        // Buton stilini ayarla
+        button.style.position = 'fixed';
+        button.style.top = '10px';
+        button.style.right = '10px';
+        button.style.padding = '10px';
+        button.style.backgroundColor = '#ff9900';
+        button.style.color = '#fff';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.zIndex = 1000;
+        button.style.cursor = 'pointer';
+        
+        // Butonu sayfaya ekle
+        document.body.appendChild(button);
+
+        // Butona tıklama olayı ekle
+        button.addEventListener('click', function() {
+            showLicenseModal();
+        });
     }
 
     // Sayfa yüklendiğinde butonu oluştur
