@@ -4,7 +4,7 @@
 // @version      8.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
-// @include      /^((https?:\/\/(?:www\.amazon\..*\/.*)))$/
+// @include      /^https?:\/\/(www\.)?amazon\..*\/(s\?k=.+|dp\/\w+|gp\/product\/\w+)/
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
@@ -83,55 +83,13 @@
         alert('Veriler başarıyla kaydedildi!');
     }
 
-    // Belirli bir kategorideki ürünleri çekme
-    function fetchProductsInCategory() {
-        // Örnek olarak kategori seçimi yapıldı
-        let categorySelector = document.querySelector("#departments > ul > span > span:nth-child(1)");
-
-        if (categorySelector) {
-            // Kategoriye ait URL'sini al
-            let categoryUrl = categorySelector.querySelector('a').getAttribute('href');
-            let apiUrl = `https://www.amazon.com.au${categoryUrl}`;
-
-            // Kategori sayfasını fetch ile getir
-            fetch(apiUrl)
-                .then(response => response.text())
-                .then(html => {
-                    // HTML içeriğinden ürünleri çek
-                    let parser = new DOMParser();
-                    let doc = parser.parseFromString(html, 'text/html');
-                    let productElements = doc.querySelectorAll('div[data-asin]');
-                    let productData = [];
-
-                    productElements.forEach(element => {
-                        let asin = getASIN(element);
-                        if (asin) {
-                            let productName = getProductName(element);
-                            productData.push({ asin, productName });
-                        }
-                    });
-
-                    if (productData.length > 0) {
-                        displayData(productData);
-                    } else {
-                        console.error("ASIN veya ürün adı bulunamadı.");
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching products:', error);
-                });
-        } else {
-            console.error("Kategori seçici bulunamadı veya URL alınamadı.");
-        }
-    }
-
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
         // Buton oluştur
         let button = document.createElement('button');
         button.id = 'fetchDataButton';
         button.textContent = 'Fetch ASIN Data';
-
+        
         // Buton stilini ayarla
         button.style.position = 'fixed';
         button.style.top = '10px';
@@ -143,13 +101,29 @@
         button.style.borderRadius = '5px';
         button.style.zIndex = 1000;
         button.style.cursor = 'pointer';
-
+        
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
-        button.addEventListener('click', function() {
-            fetchProductsInCategory();
+        button.addEventListener('click', async function() {
+            // ASIN ve ürün adını al
+            let productElements = document.querySelectorAll('div[data-asin]');
+            let productData = [];
+
+            productElements.forEach(element => {
+                let asin = getASIN(element);
+                if (asin) {
+                    let productName = getProductName(element);
+                    productData.push({ asin, productName });
+                }
+            });
+
+            if (productData.length > 0) {
+                displayData(productData);
+            } else {
+                console.error("ASIN veya ürün adı bulunamadı.");
+            }
         });
     }
 
