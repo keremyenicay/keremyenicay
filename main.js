@@ -30,106 +30,120 @@
     }
 
     // Verileri ekranda göster
-    function displayData(productData) {
-        // Yeni bir div oluştur
-        let popupContainer = document.createElement('div');
-        popupContainer.id = 'popupContainer';
-        popupContainer.style.position = 'fixed';
-        popupContainer.style.top = '50%';
-        popupContainer.style.left = '50%';
-        popupContainer.style.transform = 'translate(-50%, -50%)';
-        popupContainer.style.backgroundColor = '#fff';
-        popupContainer.style.padding = '20px';
-        popupContainer.style.border = '1px solid #ccc';
-        popupContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
-        popupContainer.style.zIndex = '1000';
-        popupContainer.style.textAlign = 'center';
+function displayData(productData) {
+    // Yeni bir div oluştur
+    let popupContainer = document.createElement('div');
+    popupContainer.id = 'popupContainer';
+    popupContainer.style.position = 'fixed';
+    popupContainer.style.top = '50%';
+    popupContainer.style.left = '50%';
+    popupContainer.style.transform = 'translate(-50%, -50%)';
+    popupContainer.style.backgroundColor = '#fff';
+    popupContainer.style.padding = '20px';
+    popupContainer.style.border = '1px solid #ccc';
+    popupContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
+    popupContainer.style.zIndex = '1000';
+    popupContainer.style.textAlign = 'center';
 
-        // Kapatma butonu oluştur
-        let closeButton = document.createElement('button');
-        closeButton.textContent = 'Kapat';
-        closeButton.style.marginRight = '10px';
-        closeButton.style.cursor = 'pointer';
-        closeButton.addEventListener('click', function() {
-            popupContainer.remove();
-        });
+    // ASIN bilgilerini listele
+    let asinList = document.createElement('ul');
+    asinList.style.textAlign = 'left';
+    asinList.style.listStyle = 'none';
+    asinList.style.padding = '0';
+    asinList.style.margin = '0';
 
-        // Kaydetme butonu oluştur
+    productData.forEach(item => {
+        let listItem = document.createElement('li');
+        listItem.textContent = item.asin;
+
         let saveButton = document.createElement('button');
         saveButton.textContent = 'Kaydet';
         saveButton.style.backgroundColor = '#4CAF50';
         saveButton.style.color = 'white';
-        saveButton.style.padding = '10px 20px';
+        saveButton.style.padding = '5px 10px';
         saveButton.style.border = 'none';
+        saveButton.style.marginLeft = '10px';
         saveButton.style.cursor = 'pointer';
         saveButton.style.borderRadius = '5px';
         saveButton.addEventListener('click', function() {
-            saveData(productData);
-            popupContainer.remove();
+            saveData(item.asin, item.productName);
         });
 
-        // Butonları div içine ekle
-        popupContainer.appendChild(closeButton);
-        popupContainer.appendChild(saveButton);
-
-        // Popup penceresini sayfaya ekle
-        document.body.appendChild(popupContainer);
-    }
-
-    // Verileri kaydetmek için fonksiyon
-    function saveData(productData) {
-        // Burada kaydetme işlemlerini yapabilirsiniz
-        console.log('Kaydedilen veriler:', productData);
-        alert('Veriler başarıyla kaydedildi!');
-    }
-
-    // Buton oluşturma ve sayfaya ekleme
-    function createButton() {
-        // Buton oluştur
-        let button = document.createElement('button');
-        button.id = 'fetchDataButton';
-        button.textContent = 'Fetch ASIN Data';
-        
-        // Buton stilini ayarla
-        button.style.position = 'fixed';
-        button.style.top = '10px';
-        button.style.right = '10px';
-        button.style.padding = '10px';
-        button.style.backgroundColor = '#ff9900';
-        button.style.color = '#fff';
-        button.style.border = 'none';
-        button.style.borderRadius = '5px';
-        button.style.zIndex = 1000;
-        button.style.cursor = 'pointer';
-        
-        // Butonu sayfaya ekle
-        document.body.appendChild(button);
-
-        // Butona tıklama olayı ekle
-        button.addEventListener('click', async function() {
-            // ASIN ve ürün adını al
-            let productElements = document.querySelectorAll('div[data-asin]');
-            let productData = [];
-
-            productElements.forEach(element => {
-                let asin = getASIN(element);
-                if (asin) {
-                    let productName = getProductName(element);
-                    productData.push({ asin, productName });
-                }
-            });
-
-            if (productData.length > 0) {
-                displayData(productData);
-            } else {
-                console.error("ASIN veya ürün adı bulunamadı.");
-            }
-        });
-    }
-
-    // Sayfa yüklendiğinde butonu oluştur
-    window.addEventListener('load', function() {
-        createButton();
+        listItem.appendChild(saveButton);
+        asinList.appendChild(listItem);
     });
 
-})();
+    popupContainer.appendChild(asinList);
+
+    // Kapatma butonu oluştur
+    let closeButton = document.createElement('button');
+    closeButton.textContent = 'Kapat';
+    closeButton.style.marginTop = '10px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.addEventListener('click', function() {
+        popupContainer.remove();
+    });
+
+    popupContainer.appendChild(closeButton);
+
+    // Popup penceresini sayfaya ekle
+    document.body.appendChild(popupContainer);
+}
+
+// Verileri kaydetmek için fonksiyon
+function saveData(asin, productName) {
+    // Burada kaydetme işlemlerini yapabilirsiniz
+    console.log('Kaydedilen ASIN:', asin);
+    console.log('Ürün Adı:', productName);
+    alert('ASIN ve Ürün Adı başarıyla kaydedildi!');
+}
+
+// Buton oluşturma ve sayfaya ekleme
+function createButton() {
+    // Buton oluştur
+    let button = document.createElement('button');
+    button.id = 'fetchDataButton';
+    button.textContent = 'Fetch ASIN Data';
+    
+    // Buton stilini ayarla
+    button.style.position = 'fixed';
+    button.style.top = '10px';
+    button.style.right = '10px';
+    button.style.padding = '10px';
+    button.style.backgroundColor = '#ff9900';
+    button.style.color = '#fff';
+    button.style.border = 'none';
+    button.style.borderRadius = '5px';
+    button.style.zIndex = 1000;
+    button.style.cursor = 'pointer';
+    
+    // Butonu sayfaya ekle
+    document.body.appendChild(button);
+
+    // Butona tıklama olayı ekle
+    button.addEventListener('click', async function() {
+        // ASIN ve ürün adını al
+        let productElements = document.querySelectorAll('div[data-asin]');
+        let productData = [];
+
+        productElements.forEach(element => {
+            let asin = getASIN(element);
+            if (asin) {
+                let productName = getProductName(element);
+                productData.push({ asin, productName });
+            }
+        });
+
+        if (productData.length > 0) {
+            displayData(productData);
+        } else {
+            console.error("ASIN veya ürün adı bulunamadı.");
+        }
+    });
+}
+
+// Sayfa yüklendiğinde butonu oluştur
+window.addEventListener('load', function() {
+    createButton();
+});
+
