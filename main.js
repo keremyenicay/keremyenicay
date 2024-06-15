@@ -4,7 +4,7 @@
 // @version      8.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
-// @include      /^https?:\/\/(www\.)?amazon\.com\.au\/.*/
+// @include      /^((https?:\/\/(?:www\.amazon\..*\/.*)))$/
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
@@ -29,8 +29,8 @@
         }
     }
 
-    // ASIN bilgilerini ekranda göster
-    function displayASIN(productData) {
+    // Verileri ekranda göster
+    function displayData(productData) {
         // Yeni bir div oluştur
         let popupContainer = document.createElement('div');
         popupContainer.id = 'popupContainer';
@@ -54,25 +54,53 @@
             popupContainer.remove();
         });
 
-        // ASIN listesini oluştur
-        let asinList = document.createElement('ul');
-        asinList.style.listStyleType = 'none';
-        asinList.style.padding = '0';
-        asinList.style.textAlign = 'left';
-
-        // ASIN verilerini listeye ekle
-        productData.forEach(item => {
-            let listItem = document.createElement('li');
-            listItem.textContent = `ASIN: ${item.asin} - Ürün Adı: ${item.productName}`;
-            asinList.appendChild(listItem);
+        // Kaydetme butonu oluştur
+        let saveButton = document.createElement('button');
+        saveButton.textContent = 'Kaydet';
+        saveButton.style.backgroundColor = '#4CAF50';
+        saveButton.style.color = 'white';
+        saveButton.style.padding = '10px 20px';
+        saveButton.style.border = 'none';
+        saveButton.style.cursor = 'pointer';
+        saveButton.style.borderRadius = '5px';
+        saveButton.addEventListener('click', function() {
+            saveData(productData);
+            popupContainer.remove();
         });
 
-        // Popup içeriğini düzenle
+        // Butonları div içine ekle
         popupContainer.appendChild(closeButton);
-        popupContainer.appendChild(asinList);
+        popupContainer.appendChild(saveButton);
 
         // Popup penceresini sayfaya ekle
         document.body.appendChild(popupContainer);
+    }
+
+    // Verileri kaydetmek için fonksiyon
+    function saveData(productData) {
+        // Burada kaydetme işlemlerini yapabilirsiniz
+        console.log('Kaydedilen veriler:', productData);
+        alert('Veriler başarıyla kaydedildi!');
+    }
+
+    // Bulunduğumuz sayfada ürün ASIN ve isim bilgilerini çekme
+    function fetchProductsOnCurrentPage() {
+        let productElements = document.querySelectorAll('div[data-asin]');
+        let productData = [];
+
+        productElements.forEach(element => {
+            let asin = getASIN(element);
+            if (asin) {
+                let productName = getProductName(element);
+                productData.push({ asin, productName });
+            }
+        });
+
+        if (productData.length > 0) {
+            displayData(productData);
+        } else {
+            console.error("ASIN veya ürün adı bulunamadı.");
+        }
     }
 
     // Buton oluşturma ve sayfaya ekleme
@@ -81,7 +109,7 @@
         let button = document.createElement('button');
         button.id = 'fetchDataButton';
         button.textContent = 'Fetch ASIN Data';
-        
+
         // Buton stilini ayarla
         button.style.position = 'fixed';
         button.style.top = '10px';
@@ -93,29 +121,13 @@
         button.style.borderRadius = '5px';
         button.style.zIndex = 1000;
         button.style.cursor = 'pointer';
-        
+
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
-        button.addEventListener('click', async function() {
-            // ASIN ve ürün adını al
-            let productElements = document.querySelectorAll('div[data-asin]');
-            let productData = [];
-
-            productElements.forEach(element => {
-                let asin = getASIN(element);
-                if (asin) {
-                    let productName = getProductName(element);
-                    productData.push({ asin, productName });
-                }
-            });
-
-            if (productData.length > 0) {
-                displayASIN(productData);
-            } else {
-                console.error("ASIN veya ürün adı bulunamadı.");
-            }
+        button.addEventListener('click', function() {
+            fetchProductsOnCurrentPage();
         });
     }
 
