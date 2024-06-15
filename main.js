@@ -30,7 +30,7 @@
     }
 
     // Verileri ekranda göster
-    function displayData(asin, productName) {
+    function displayData(productData) {
         // Yeni bir pencere aç
         let popupWindow = window.open('', 'Amazon Product Data', 'width=600,height=400,scrollbars=yes,resizable=yes');
 
@@ -41,8 +41,10 @@
                 <title>Amazon Product Data</title>
             </head>
             <body>
-                <h2>ASIN: ${asin}</h2>
-                <h3>Product Name: ${productName}</h3>
+                <h1>Amazon Ürün Bilgileri</h1>
+                <ul>
+                    ${productData.map(item => `<li>ASIN: ${item.asin}, Ürün Adı: ${item.productName}</li>`).join('')}
+                </ul>
             </body>
             </html>
         `;
