@@ -4,8 +4,8 @@
 // @version      8.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
-// @include      /^((https?:\/\/(?:www\.amazon\..*\/.*)))$/
-// @grant        none
+// @include      /^https?:\/\/(www\.)?amazon\.com\.au\/.*/
+// @grant        GM_xmlhttpRequest
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
 
@@ -99,6 +99,44 @@
         document.body.appendChild(popupContainer);
     }
 
+    // ASIN'leri arka planda çekmek için fonksiyon
+    function fetchASINsInBackground(url) {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: url,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                onload: function(response) {
+                    if (response.status === 200) {
+                        let htmlString = response.responseText;
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(htmlString, 'text/html');
+                        let productElements = doc.querySelectorAll('div[data-asin]');
+                        let productData = [];
+
+                        productElements.forEach(element => {
+                            let asin = getASIN(element);
+                            if (asin) {
+                                let productName = getProductName(element);
+                                productData.push({ asin, productName });
+                            }
+                        });
+
+                        resolve(productData);
+                    } else {
+                        reject(new Error(`Failed to fetch ASINs. Status Code: ${response.status}`));
+                    }
+                },
+                onerror: function(error) {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
         // Buton oluştur
@@ -123,22 +161,16 @@
 
         // Butona tıklama olayı ekle
         button.addEventListener('click', async function() {
-            // ASIN ve ürün adını al
-            let productElements = document.querySelectorAll('div[data-asin]');
-            let productData = [];
-
-            productElements.forEach(element => {
-                let asin = getASIN(element);
-                if (asin) {
-                    let productName = getProductName(element);
-                    productData.push({ asin, productName });
+            try {
+                let currentURL = window.location.href;
+                let productData = await fetchASINsInBackground(currentURL);
+                if (productData.length > 0) {
+                    displayData(productData);
+                } else {
+                    console.error("ASIN veya ürün adı bulunamadı.");
                 }
-            });
-
-            if (productData.length > 0) {
-                displayData(productData);
-            } else {
-                console.error("ASIN veya ürün adı bulunamadı.");
+            } catch (error) {
+                console.error("Arka planda ASIN bilgileri çekilirken hata oluştu:", error);
             }
         });
     }
