@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazon ASIN ADAM Veri Kazıyıcı by Adnan
 // @namespace    http://tampermonkey.net/
-// @version      8.0
+// @version      9.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
 // @include      /^https?:\/\/(?:www\.)?amazon\.(com|co\.uk|de|fr|es|it|com\.au|nl|ca|in|co\.jp|com\.mx|com\.br|cn)\/.*/i
