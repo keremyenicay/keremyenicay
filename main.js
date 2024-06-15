@@ -4,8 +4,8 @@
 // @version      8.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
-// @include      /^https?:\/\/(www\.)?amazon\..*\/(s\?k=.+|dp\/\w+|gp\/product\/\w+)/
-// @grant        none
+// @include      /^https?:\/\/(www\.)?amazon\.com\.au\/.*/
+// @grant        GM_download
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
 
@@ -78,9 +78,20 @@
 
     // Verileri kaydetmek için fonksiyon
     function saveData(productData) {
-        // Burada kaydetme işlemlerini yapabilirsiniz
-        console.log('Kaydedilen veriler:', productData);
-        alert('Veriler başarıyla kaydedildi!');
+        // ASIN bilgilerini metin dosyasına kaydet
+        let asinText = productData.map(item => item.asin).join('\n');
+        GM_download({
+            url: 'data:text/plain;charset=utf-8,' + encodeURIComponent(asinText),
+            name: 'asin_list.txt',
+            onload: function() {
+                console.log('ASIN listesi başarıyla indirildi.');
+                alert('ASIN listesi başarıyla indirildi.');
+            },
+            onerror: function(error) {
+                console.error('ASIN listesi indirilirken hata oluştu:', error);
+                alert('ASIN listesi indirilirken hata oluştu.');
+            }
+        });
     }
 
     // Buton oluşturma ve sayfaya ekleme
@@ -107,10 +118,37 @@
 
         // Butona tıklama olayı ekle
         button.addEventListener('click', async function() {
-            // ASIN ve ürün adını al
-            let productElements = document.querySelectorAll('div[data-asin]');
-            let productData = [];
+            // Kategori seçicisiyle ürünleri çek
+            let categoryElement = document.querySelector("#departments > ul > span > span:nth-child(3)");
+            if (!categoryElement) {
+                console.error('Kategori bulunamadı.');
+                return;
+            }
 
+            // Kategorideki ürünleri arka planda çek
+            let categoryURL = categoryElement.querySelector('a').href;
+            let productData = await scrapeCategoryProducts(categoryURL);
+            
+            if (productData.length > 0) {
+                displayData(productData);
+            } else {
+                console.error("Kategoride ürün bulunamadı.");
+            }
+        });
+    }
+
+    // Kategori sayfasından ürün ASIN bilgilerini çekme fonksiyonu
+    async function scrapeCategoryProducts(url) {
+        let productData = [];
+
+        try {
+            // Kategori sayfasını fetch ile al
+            let response = await fetch(url);
+            let html = await response.text();
+            let doc = new DOMParser().parseFromString(html, 'text/html');
+
+            // ASIN bilgilerini çek
+            let productElements = doc.querySelectorAll('div[data-asin]');
             productElements.forEach(element => {
                 let asin = getASIN(element);
                 if (asin) {
@@ -118,13 +156,11 @@
                     productData.push({ asin, productName });
                 }
             });
+        } catch (error) {
+            console.error('Hata oluştu:', error);
+        }
 
-            if (productData.length > 0) {
-                displayData(productData);
-            } else {
-                console.error("ASIN veya ürün adı bulunamadı.");
-            }
-        });
+        return productData;
     }
 
     // Sayfa yüklendiğinde butonu oluştur
