@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Amazon ASIN ADAM Veri Kazıyıcı by Adnan
+// @name         Amazon ASIN Collector
 // @namespace    http://tampermonkey.net/
-// @version      8.0
-// @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
-// @author       Adnan Gökmen - Instagram: @adnangokmen_
+// @version      1.0
+// @description  Collect ASINs from Amazon pages
+// @author       Your Name
 // @include      /^((https?:\/\/(?:www\.amazon\..*\/.*)))$/
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
@@ -53,6 +53,38 @@
         popupWindow.document.write(content);
     }
 
+    // Tüm sayfaları tarayacak fonksiyon
+    function scrapeAllPages() {
+        let productData = [];
+
+        // Amazon sayfalarını gez
+        // Bu örnekte sadece 5 sayfa taranacak şekilde sınırlı
+        for (let pageNum = 1; pageNum <= 5; pageNum++) {
+            let url = `https://www.amazon.com/s?page=${pageNum}`;
+            
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    let parser = new DOMParser();
+                    let doc = parser.parseFromString(html, 'text/html');
+                    let productElements = doc.querySelectorAll('div[data-asin]');
+                    
+                    productElements.forEach(element => {
+                        let asin = getASIN(element);
+                        if (asin) {
+                            let productName = getProductName(element);
+                            productData.push({ asin, productName });
+                        }
+                    });
+                    
+                    if (pageNum === 5) {
+                        displayData(productData);
+                    }
+                })
+                .catch(error => console.error('Error fetching page:', error));
+        }
+    }
+
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
         // Buton oluştur
@@ -77,23 +109,7 @@
 
         // Butona tıklama olayı ekle
         button.addEventListener('click', function() {
-            // ASIN ve ürün adını al
-            let productElements = document.querySelectorAll('div[data-asin]');
-            let productData = [];
-
-            productElements.forEach(element => {
-                let asin = getASIN(element);
-                if (asin) {
-                    let productName = getProductName(element);
-                    productData.push({ asin, productName });
-                }
-            });
-
-            if (productData.length > 0) {
-                displayData(productData);
-            } else {
-                console.error("ASIN veya ürün adı bulunamadı.");
-            }
+            scrapeAllPages();
         });
     }
 
