@@ -12,14 +12,6 @@
 (function() {
     'use strict';
 
-    // Lisans kodu doğrulama işlevi
-    function validateLicenseCode(enteredCode) {
-        // Gerçek uygulamada lisans kodlarını bir veritabanında saklamanız veya bir servisten doğrulamanız gerekebilir.
-        let validCodes = ['ABC123', 'XYZ456', '123ABC']; // Örnek geçerli lisans kodları
-
-        return validCodes.includes(enteredCode);
-    }
-
     // ASIN ve ürün adını al
     function getASIN() {
         let asinElement = document.querySelector("input#ASIN");
@@ -82,110 +74,6 @@
         }
     }
 
-    // Lisans kodu girişi için modal gösterme
-    function showLicenseModal() {
-        // Modal container
-        let modalContainer = document.createElement('div');
-        modalContainer.id = 'licenseModal';
-        modalContainer.style.position = 'fixed';
-        modalContainer.style.top = '0';
-        modalContainer.style.left = '0';
-        modalContainer.style.width = '100%';
-        modalContainer.style.height = '100%';
-        modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        modalContainer.style.display = 'flex';
-        modalContainer.style.justifyContent = 'center';
-        modalContainer.style.alignItems = 'center';
-        modalContainer.style.zIndex = '2000';
-
-        // Modal içeriği
-        let modalContent = document.createElement('div');
-        modalContent.style.backgroundColor = '#fff';
-        modalContent.style.padding = '20px';
-        modalContent.style.borderRadius = '5px';
-        modalContent.style.width = '300px';
-        modalContent.style.textAlign = 'center';
-
-        // Modal başlık
-        let modalTitle = document.createElement('h2');
-        modalTitle.textContent = 'Enter License Code';
-
-        // Lisans kodu giriş alanı
-        let licenseInput = document.createElement('input');
-        licenseInput.type = 'text';
-        licenseInput.id = 'licenseInput';
-        licenseInput.placeholder = 'Enter your license code';
-        licenseInput.style.width = '100%';
-        licenseInput.style.marginBottom = '10px';
-        licenseInput.style.padding = '8px';
-        licenseInput.style.border = '1px solid #ccc';
-        licenseInput.style.borderRadius = '3px';
-
-        // Lisans kodu gönder butonu
-        let submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.style.backgroundColor = '#4CAF50';
-        submitButton.style.color = '#fff';
-        submitButton.style.padding = '10px';
-        submitButton.style.border = 'none';
-        submitButton.style.borderRadius = '3px';
-        submitButton.style.cursor = 'pointer';
-
-        // Submit button click event
-        submitButton.addEventListener('click', function() {
-            let licenseCode = document.getElementById('licenseInput').value;
-            if (licenseCode.trim() !== '') {
-                // Lisans kodu doğrulaması yap
-                let isValid = validateLicenseCode(licenseCode);
-
-                if (isValid) {
-                    // Lisans kodu geçerliyse devam et
-                    console.log('Valid license code:', licenseCode);
-
-                    // Lisans kodu girişini kapat
-                    closeModal();
-                    
-                    // ASIN ve ürün adını al ve göster
-                    let asin = getASIN();
-                    let productName = getProductName();
-
-                    if (asin && productName) {
-                        displayData(asin, productName);
-                        
-                        // Ürün bilgilerini çekmeye başla
-                        fetchProductData();
-                    } else {
-                        console.error("ASIN veya ürün adı bulunamadı.");
-                    }
-                } else {
-                    // Lisans kodu geçerli değilse hata mesajı göster
-                    alert('Invalid license code. Please try again.');
-                }
-            } else {
-                alert('Please enter a valid license code.');
-            }
-        });
-
-        // Modal içeriğini oluştur
-        modalContent.appendChild(modalTitle);
-        modalContent.appendChild(licenseInput);
-        modalContent.appendChild(submitButton);
-
-        // Modal container'a içeriği ekle
-        modalContainer.appendChild(modalContent);
-
-        // Body'ye modal container'ı ekle
-        document.body.appendChild(modalContainer);
-    }
-
-    // Modalı kapatma
-    function closeModal() {
-        let modal = document.getElementById('licenseModal');
-        if (modal) {
-            modal.remove();
-        }
-    }
-
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
         // Buton oluştur
@@ -210,7 +98,18 @@
 
         // Butona tıklama olayı ekle
         button.addEventListener('click', function() {
-            showLicenseModal();
+            // ASIN ve ürün adını al
+            let asin = getASIN();
+            let productName = getProductName();
+
+            if (asin && productName) {
+                displayData(asin, productName);
+                
+                // Ürün bilgilerini çekmeye başla
+                fetchProductData();
+            } else {
+                console.error("ASIN veya ürün adı bulunamadı.");
+            }
         });
     }
 
