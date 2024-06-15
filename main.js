@@ -12,6 +12,9 @@
 (function() {
     'use strict';
 
+    // Örneğin belirttiğiniz path
+    let jsPath = '#departments > ul > span > span:nth-child(4)';
+
     // ASIN ve ürün adını al
     function getASIN(element) {
         if (element && element.hasAttribute('data-asin')) {
@@ -132,7 +135,7 @@
         let button = document.createElement('button');
         button.id = 'fetchDataButton';
         button.textContent = 'Fetch ASIN Data';
-        
+
         // Buton stilini ayarla
         button.style.position = 'fixed';
         button.style.top = '10px';
@@ -144,37 +147,24 @@
         button.style.borderRadius = '5px';
         button.style.zIndex = 1000;
         button.style.cursor = 'pointer';
-        
+
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
         button.addEventListener('click', async function() {
             try {
-                let currentURL = window.location.href;
-                let productData = await fetchASINsInBackground(currentURL);
-                if (productData.length > 0) {
-                    displayData(productData);
-                } else {
-                    console.error("ASIN veya ürün adı bulunamadı.");
-                }
-
-                // Diğer sayfalardaki ürünlerin ASIN'lerini arka planda çek
-                let nextPageButton = doc.querySelector('.a-pagination .a-last');
-                if (nextPageButton) {
-                    let nextPageURL = new URL(nextPageButton.href);
-                    let nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
-                    while (nextPageButton && nextURL !== currentURL) {
-                        let nextPageData = await fetchASINsInBackground(nextURL);
-                        if (nextPageData.length > 0) {
-                            displayData(nextPageData);
-                        }
-                        nextPageButton = doc.querySelector('.a-pagination .a-last');
-                        if (nextPageButton) {
-                            nextPageURL = new URL(nextPageButton.href);
-                            nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
-                        }
+                let targetElement = document.querySelector(jsPath);
+                if (targetElement) {
+                    let currentURL = window.location.href;
+                    let productData = await fetchASINsInBackground(currentURL);
+                    if (productData.length > 0) {
+                        displayData(productData);
+                    } else {
+                        console.error("ASIN veya ürün adı bulunamadı.");
                     }
+                } else {
+                    console.error('Target element not found for path:', jsPath);
                 }
             } catch (error) {
                 console.error("Arka planda ASIN bilgileri çekilirken hata oluştu:", error);
