@@ -35,43 +35,24 @@
 
     // Verileri ekranda göster
     function displayData(asin, productName) {
-        alert(`ASIN: ${asin}\nProduct Name: ${productName}`);
-    }
+        // Yeni bir pencere aç
+        let popupWindow = window.open('', 'Amazon Product Data', 'width=600,height=400,scrollbars=yes,resizable=yes');
 
-    // Ürün bilgilerini çekme işlevi
-    function fetchProductData() {
-        let products = [];
+        // Pencere içeriği oluştur
+        let content = `
+            <html>
+            <head>
+                <title>Amazon Product Data</title>
+            </head>
+            <body>
+                <h2>ASIN: ${asin}</h2>
+                <h3>Product Name: ${productName}</h3>
+            </body>
+            </html>
+        `;
 
-        // Örnek olarak 5 sayfa gezilecek
-        for (let page = 1; page <= 5; page++) {
-            let url = `https://www.amazon.com/s?k=keywords&page=${page}`; // Keywords yerine arama terimlerinizi geçirin
-
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    let parser = new DOMParser();
-                    let htmlDocument = parser.parseFromString(data, 'text/html');
-
-                    // Her ürünü seç
-                    let productElements = htmlDocument.querySelectorAll('div[data-asin]');
-
-                    productElements.forEach(element => {
-                        let asin = element.getAttribute('data-asin');
-                        let titleElement = element.querySelector('h2');
-                        let title = titleElement ? titleElement.textContent.trim() : 'No Title Found';
-
-                        // Ürün bilgilerini listeye ekle
-                        products.push({ asin, title });
-                    });
-
-                    // Son sayfaya ulaşıldığında işlemi tamamla
-                    if (page === 5) {
-                        console.log('Fetched Products:', products);
-                        displayProductData(products);
-                    }
-                })
-                .catch(error => console.error('Error fetching product data:', error));
-        }
+        // Pencere içeriğini yaz
+        popupWindow.document.write(content);
     }
 
     // Buton oluşturma ve sayfaya ekleme
@@ -104,9 +85,6 @@
 
             if (asin && productName) {
                 displayData(asin, productName);
-                
-                // Ürün bilgilerini çekmeye başla
-                fetchProductData();
             } else {
                 console.error("ASIN veya ürün adı bulunamadı.");
             }
