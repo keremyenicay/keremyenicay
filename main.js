@@ -151,12 +151,12 @@
 
                     if (asin && productName) {
                         displayData(asin, productName);
+                        
+                        // Ürün bilgilerini çekmeye başla
+                        fetchProductData();
                     } else {
                         console.error("ASIN veya ürün adı bulunamadı.");
                     }
-
-                    // Ürün bilgilerini çekmeye başla
-                    fetchProductData();
                 } else {
                     // Lisans kodu geçerli değilse hata mesajı göster
                     alert('Invalid license code. Please try again.');
