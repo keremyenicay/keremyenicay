@@ -14,10 +14,10 @@
 
     // ASIN ve ürün adını al
     function getASIN(element) {
-        if (element) {
-            return element.getAttribute('data-asin') || 'ASIN not found';
+        if (element && element.hasAttribute('data-asin')) {
+            return element.getAttribute('data-asin');
         } else {
-            return 'ASIN element not found';
+            return null; // data-asin özniteliği yoksa null döndür
         }
     }
 
@@ -83,8 +83,10 @@
 
             productElements.forEach(element => {
                 let asin = getASIN(element);
-                let productName = getProductName(element);
-                productData.push({ asin, productName });
+                if (asin) {
+                    let productName = getProductName(element);
+                    productData.push({ asin, productName });
+                }
             });
 
             if (productData.length > 0) {
