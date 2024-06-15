@@ -46,6 +46,42 @@
         alert(`ASIN: ${asin}\nProduct Name: ${productName}`);
     }
 
+    // Ürün bilgilerini çekme işlevi
+    function fetchProductData() {
+        let products = [];
+
+        // Örnek olarak 5 sayfa gezilecek
+        for (let page = 1; page <= 5; page++) {
+            let url = `https://www.amazon.com/s?k=keywords&page=${page}`; // Keywords yerine arama terimlerinizi geçirin
+
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    let parser = new DOMParser();
+                    let htmlDocument = parser.parseFromString(data, 'text/html');
+
+                    // Her ürünü seç
+                    let productElements = htmlDocument.querySelectorAll('div[data-asin]');
+
+                    productElements.forEach(element => {
+                        let asin = element.getAttribute('data-asin');
+                        let titleElement = element.querySelector('h2');
+                        let title = titleElement ? titleElement.textContent.trim() : 'No Title Found';
+
+                        // Ürün bilgilerini listeye ekle
+                        products.push({ asin, title });
+                    });
+
+                    // Son sayfaya ulaşıldığında işlemi tamamla
+                    if (page === 5) {
+                        console.log('Fetched Products:', products);
+                        displayProductData(products);
+                    }
+                })
+                .catch(error => console.error('Error fetching product data:', error));
+        }
+    }
+
     // Lisans kodu girişi için modal gösterme
     function showLicenseModal() {
         // Modal container
@@ -118,6 +154,9 @@
                     } else {
                         console.error("ASIN veya ürün adı bulunamadı.");
                     }
+
+                    // Ürün bilgilerini çekmeye başla
+                    fetchProductData();
                 } else {
                     // Lisans kodu geçerli değilse hata mesajı göster
                     alert('Invalid license code. Please try again.');
