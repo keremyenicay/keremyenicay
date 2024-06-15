@@ -55,34 +55,38 @@
 
     // Tüm sayfaları tarayacak fonksiyon
     function scrapeAllPages() {
-        let productData = [];
+        return new Promise((resolve, reject) => {
+            let productData = [];
 
-        // Amazon sayfalarını gez
-        // Bu örnekte sadece 5 sayfa taranacak şekilde sınırlı
-        for (let pageNum = 1; pageNum <= 5; pageNum++) {
-            let url = `https://www.amazon.com/s?page=${pageNum}`;
-            
-            fetch(url)
-                .then(response => response.text())
-                .then(html => {
-                    let parser = new DOMParser();
-                    let doc = parser.parseFromString(html, 'text/html');
-                    let productElements = doc.querySelectorAll('div[data-asin]');
-                    
-                    productElements.forEach(element => {
-                        let asin = getASIN(element);
-                        if (asin) {
-                            let productName = getProductName(element);
-                            productData.push({ asin, productName });
+            // Amazon sayfalarını gez
+            // Bu örnekte sadece 5 sayfa taranacak şekilde sınırlı
+            for (let pageNum = 1; pageNum <= 5; pageNum++) {
+                let url = `https://www.amazon.com/s?page=${pageNum}`;
+
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(html, 'text/html');
+                        let productElements = doc.querySelectorAll('div[data-asin]');
+
+                        productElements.forEach(element => {
+                            let asin = getASIN(element);
+                            if (asin) {
+                                let productName = getProductName(element);
+                                productData.push({ asin, productName });
+                            }
+                        });
+
+                        if (pageNum === 5) {
+                            resolve(productData);
                         }
+                    })
+                    .catch(error => {
+                        reject(error);
                     });
-                    
-                    if (pageNum === 5) {
-                        displayData(productData);
-                    }
-                })
-                .catch(error => console.error('Error fetching page:', error));
-        }
+            }
+        });
     }
 
     // Buton oluşturma ve sayfaya ekleme
@@ -91,7 +95,7 @@
         let button = document.createElement('button');
         button.id = 'fetchDataButton';
         button.textContent = 'Fetch ASIN Data';
-        
+
         // Buton stilini ayarla
         button.style.position = 'fixed';
         button.style.top = '10px';
@@ -103,13 +107,19 @@
         button.style.borderRadius = '5px';
         button.style.zIndex = 1000;
         button.style.cursor = 'pointer';
-        
+
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
-        button.addEventListener('click', function() {
-            scrapeAllPages();
+        button.addEventListener('click', async function() {
+            try {
+                let productData = await scrapeAllPages();
+                displayData(productData);
+            } catch (error) {
+                console.error('Error fetching ASIN data:', error);
+                alert('Error fetching ASIN data. See console for details.');
+            }
         });
     }
 
