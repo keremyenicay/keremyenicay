@@ -30,28 +30,62 @@
     }
 
     // Verileri ekranda göster
-    function displayData(productData) {
-        // Yeni bir pencere aç
-        let popupWindow = window.open('', 'Amazon Product Data', 'width=600,height=400,scrollbars=yes,resizable=yes');
+function displayData(productData) {
+    // Yeni bir pencere aç
+    let popupWindow = window.open('', 'Amazon Product Data', 'width=800,height=600,scrollbars=yes,resizable=yes');
 
-        // Pencere içeriği oluştur
-        let content = `
-            <html>
-            <head>
-                <title>Amazon Product Data</title>
-            </head>
-            <body>
-                <h1>Amazon Ürün Bilgileri</h1>
-                <ul>
-                    ${productData.map(item => `<li>ASIN: ${item.asin}, Ürün Adı: ${item.productName}</li>`).join('')}
-                </ul>
-            </body>
-            </html>
-        `;
+    // Başlık ve içerik oluştur
+    let content = `
+        <html>
+        <head>
+            <title>Amazon Product Data</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                }
+                h1 {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .data-table {
+                    display: grid;
+                    grid-template-columns: 1fr 2fr;
+                    gap: 10px;
+                }
+                .data-table li {
+                    list-style: none;
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    background-color: #f9f9f9;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Amazon Ürün Bilgileri</h1>
+            <div class="data-table">
+                <div>
+                    <h2>ASIN</h2>
+                    <ul>
+                        ${productData.map(item => `<li>${item.asin}</li>`).join('')}
+                    </ul>
+                </div>
+                <div>
+                    <h2>Ürün Adı</h2>
+                    <ul>
+                        ${productData.map(item => `<li>${item.productName}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
 
-        // Pencere içeriğini yaz
-        popupWindow.document.write(content);
-    }
+    // Pencere içeriğini yaz
+    popupWindow.document.write(content);
+}
+
 
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
