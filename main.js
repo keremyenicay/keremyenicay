@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Amazon ASIN Collector
+// @name         Amazon ASIN ADAM Veri Kazıyıcı by Adnan
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Collect ASINs from Amazon pages
-// @author       Your Name
+// @version      8.0
+// @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
+// @author       Adnan Gökmen - Instagram: @adnangokmen_
 // @include      /^((https?:\/\/(?:www\.amazon\..*\/.*)))$/
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
@@ -53,55 +53,13 @@
         popupWindow.document.write(content);
     }
 
-    // Tüm sayfaları tarayacak fonksiyon
-    function scrapeAllPages() {
-        return new Promise((resolve, reject) => {
-            let productData = [];
-
-            // Amazon sayfalarını gez
-            // Bu örnekte sadece 5 sayfa taranacak şekilde sınırlı
-            for (let pageNum = 1; pageNum <= 5; pageNum++) {
-                let url = `https://www.amazon.com/s?page=${pageNum}`;
-
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.text();
-                    })
-                    .then(html => {
-                        let parser = new DOMParser();
-                        let doc = parser.parseFromString(html, 'text/html');
-                        let productElements = doc.querySelectorAll('div[data-asin]');
-
-                        productElements.forEach(element => {
-                            let asin = getASIN(element);
-                            if (asin) {
-                                let productName = getProductName(element);
-                                productData.push({ asin, productName });
-                            }
-                        });
-
-                        if (pageNum === 5) {
-                            resolve(productData);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching page:', error);
-                        reject(error); // Hata durumunda promise'i reddet
-                    });
-            }
-        });
-    }
-
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
         // Buton oluştur
         let button = document.createElement('button');
         button.id = 'fetchDataButton';
         button.textContent = 'Fetch ASIN Data';
-
+        
         // Buton stilini ayarla
         button.style.position = 'fixed';
         button.style.top = '10px';
@@ -113,18 +71,28 @@
         button.style.borderRadius = '5px';
         button.style.zIndex = 1000;
         button.style.cursor = 'pointer';
-
+        
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
-        button.addEventListener('click', async function() {
-            try {
-                let productData = await scrapeAllPages();
+        button.addEventListener('click', function() {
+            // ASIN ve ürün adını al
+            let productElements = document.querySelectorAll('div[data-asin]');
+            let productData = [];
+
+            productElements.forEach(element => {
+                let asin = getASIN(element);
+                if (asin) {
+                    let productName = getProductName(element);
+                    productData.push({ asin, productName });
+                }
+            });
+
+            if (productData.length > 0) {
                 displayData(productData);
-            } catch (error) {
-                console.error('Error fetching ASIN data:', error);
-                alert('Error fetching ASIN data. See console for details.');
+            } else {
+                console.error("ASIN veya ürün adı bulunamadı.");
             }
         });
     }
