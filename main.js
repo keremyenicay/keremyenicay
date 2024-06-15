@@ -29,18 +29,6 @@
         }
     }
 
-    // ASIN'leri txt olarak kaydet
-    function saveAsinToFile(asins) {
-        let asinText = asins.join('\n');
-        let blob = new Blob([asinText], { type: 'text/plain' });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = 'asins.txt';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
     // Verileri ekranda göster
     function displayData(productData) {
         // Yeni bir div oluştur
@@ -57,16 +45,14 @@
         popupContainer.style.zIndex = '1000';
         popupContainer.style.textAlign = 'center';
 
-        // ASIN bilgilerini içeren listeyi oluştur
-        let asins = productData.map(item => item.asin);
-        let asinList = document.createElement('ul');
-        asins.forEach(asin => {
-            let listItem = document.createElement('li');
-            listItem.textContent = asin;
-            asinList.appendChild(listItem);
+        // Kapatma butonu oluştur
+        let closeButton = document.createElement('button');
+        closeButton.textContent = 'Kapat';
+        closeButton.style.marginRight = '10px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.addEventListener('click', function() {
+            popupContainer.remove();
         });
-
-        popupContainer.appendChild(asinList);
 
         // Kaydetme butonu oluştur
         let saveButton = document.createElement('button');
@@ -78,25 +64,65 @@
         saveButton.style.cursor = 'pointer';
         saveButton.style.borderRadius = '5px';
         saveButton.addEventListener('click', function() {
-            saveAsinToFile(asins);
-        });
-
-        popupContainer.appendChild(saveButton);
-
-        // Kapatma butonu oluştur
-        let closeButton = document.createElement('button');
-        closeButton.textContent = 'Kapat';
-        closeButton.style.marginTop = '10px';
-        closeButton.style.cursor = 'pointer';
-        closeButton.addEventListener('click', function() {
+            saveData(productData);
             popupContainer.remove();
         });
 
         // Butonları div içine ekle
         popupContainer.appendChild(closeButton);
+        popupContainer.appendChild(saveButton);
 
         // Popup penceresini sayfaya ekle
         document.body.appendChild(popupContainer);
+    }
+
+    // Verileri kaydetmek için fonksiyon
+    function saveData(productData) {
+        // Burada kaydetme işlemlerini yapabilirsiniz
+        console.log('Kaydedilen veriler:', productData);
+        alert('Veriler başarıyla kaydedildi!');
+    }
+
+    // Belirli bir kategorideki ürünleri çekme
+    function fetchProductsInCategory() {
+        // Örnek olarak kategori seçimi yapıldı
+        let categorySelector = document.querySelector("#departments > ul > span > span:nth-child(1)");
+
+        if (categorySelector) {
+            // Kategoriye ait URL'sini al
+            let categoryUrl = categorySelector.querySelector('a').getAttribute('href');
+            let apiUrl = `https://www.amazon.com${categoryUrl}`;
+
+            // Kategori sayfasını fetch ile getir
+            fetch(apiUrl)
+                .then(response => response.text())
+                .then(html => {
+                    // HTML içeriğinden ürünleri çek
+                    let parser = new DOMParser();
+                    let doc = parser.parseFromString(html, 'text/html');
+                    let productElements = doc.querySelectorAll('div[data-asin]');
+                    let productData = [];
+
+                    productElements.forEach(element => {
+                        let asin = getASIN(element);
+                        if (asin) {
+                            let productName = getProductName(element);
+                            productData.push({ asin, productName });
+                        }
+                    });
+
+                    if (productData.length > 0) {
+                        displayData(productData);
+                    } else {
+                        console.error("ASIN veya ürün adı bulunamadı.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                });
+        } else {
+            console.error("Kategori seçici bulunamadı veya URL alınamadı.");
+        }
     }
 
     // Buton oluşturma ve sayfaya ekleme
@@ -105,7 +131,7 @@
         let button = document.createElement('button');
         button.id = 'fetchDataButton';
         button.textContent = 'Fetch ASIN Data';
-        
+
         // Buton stilini ayarla
         button.style.position = 'fixed';
         button.style.top = '10px';
@@ -117,29 +143,13 @@
         button.style.borderRadius = '5px';
         button.style.zIndex = 1000;
         button.style.cursor = 'pointer';
-        
+
         // Butonu sayfaya ekle
         document.body.appendChild(button);
 
         // Butona tıklama olayı ekle
-        button.addEventListener('click', async function() {
-            // ASIN ve ürün adını al
-            let productElements = document.querySelectorAll('div[data-asin]');
-            let productData = [];
-
-            productElements.forEach(element => {
-                let asin = getASIN(element);
-                if (asin) {
-                    let productName = getProductName(element);
-                    productData.push({ asin, productName });
-                }
-            });
-
-            if (productData.length > 0) {
-                displayData(productData);
-            } else {
-                console.error("ASIN veya ürün adı bulunamadı.");
-            }
+        button.addEventListener('click', function() {
+            fetchProductsInCategory();
         });
     }
 
