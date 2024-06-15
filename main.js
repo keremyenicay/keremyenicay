@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Amazon ASIN ADAM Veri Kazıyıcı by Adnan
 // @namespace    http://tampermonkey.net/
-// @version      9.0
+// @version      8.0
 // @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
 // @author       Adnan Gökmen - Instagram: @adnangokmen_
 // @include      /^https?:\/\/(?:www\.)?amazon\.(com|co\.uk|de|fr|es|it|com\.au|nl|ca|in|co\.jp|com\.mx|com\.br|cn)\/.*/i
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // ==/UserScript==
 
@@ -108,7 +108,7 @@
             }
             let htmlString = await response.text();
             let parser = new DOMParser();
-            let doc = parser.parseFromString(htmlString, 'text/html'); // doc değişkenini tanımla
+            let doc = parser.parseFromString(htmlString, 'text/html');
             let productElements = doc.querySelectorAll('div[data-asin]');
             let productData = [];
 
@@ -160,7 +160,7 @@
                 }
 
                 // Diğer sayfalardaki ürünlerin ASIN'lerini arka planda çek
-                let nextPageButton = document.querySelector('.a-pagination .a-last'); // doc yerine document kullan
+                let nextPageButton = doc.querySelector('.a-pagination .a-last');
                 if (nextPageButton) {
                     let nextPageURL = new URL(nextPageButton.href);
                     let nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
@@ -169,7 +169,7 @@
                         if (nextPageData.length > 0) {
                             displayData(nextPageData);
                         }
-                        nextPageButton = document.querySelector('.a-pagination .a-last');
+                        nextPageButton = doc.querySelector('.a-pagination .a-last');
                         if (nextPageButton) {
                             nextPageURL = new URL(nextPageButton.href);
                             nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
