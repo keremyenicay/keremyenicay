@@ -91,7 +91,7 @@
         if (categorySelector) {
             // Kategoriye ait URL'sini al
             let categoryUrl = categorySelector.querySelector('a').getAttribute('href');
-            let apiUrl = `https://www.amazon.com${categoryUrl}`;
+            let apiUrl = `https://www.amazon.com.au${categoryUrl}`;
 
             // Kategori sayfasını fetch ile getir
             fetch(apiUrl)
