@@ -108,7 +108,7 @@
             }
             let htmlString = await response.text();
             let parser = new DOMParser();
-            let doc = parser.parseFromString(htmlString, 'text/html');
+            let doc = parser.parseFromString(htmlString, 'text/html'); // doc değişkenini tanımla
             let productElements = doc.querySelectorAll('div[data-asin]');
             let productData = [];
 
@@ -160,7 +160,7 @@
                 }
 
                 // Diğer sayfalardaki ürünlerin ASIN'lerini arka planda çek
-                let nextPageButton = doc.querySelector('.a-pagination .a-last');
+                let nextPageButton = document.querySelector('.a-pagination .a-last'); // doc yerine document kullan
                 if (nextPageButton) {
                     let nextPageURL = new URL(nextPageButton.href);
                     let nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
@@ -169,7 +169,7 @@
                         if (nextPageData.length > 0) {
                             displayData(nextPageData);
                         }
-                        nextPageButton = doc.querySelector('.a-pagination .a-last');
+                        nextPageButton = document.querySelector('.a-pagination .a-last');
                         if (nextPageButton) {
                             nextPageURL = new URL(nextPageButton.href);
                             nextURL = `${currentURL.split('/ref=')[0]}${nextPageURL.pathname}`;
