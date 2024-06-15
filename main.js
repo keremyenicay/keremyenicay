@@ -54,40 +54,46 @@
     }
 
     // Tüm sayfaları tarayacak fonksiyon
-    function scrapeAllPages() {
-        return new Promise((resolve, reject) => {
-            let productData = [];
+function scrapeAllPages() {
+    return new Promise((resolve, reject) => {
+        let productData = [];
 
-            // Amazon sayfalarını gez
-            // Bu örnekte sadece 5 sayfa taranacak şekilde sınırlı
-            for (let pageNum = 1; pageNum <= 5; pageNum++) {
-                let url = `https://www.amazon.com/s?page=${pageNum}`;
+        // Amazon sayfalarını gez
+        // Bu örnekte sadece 5 sayfa taranacak şekilde sınırlı
+        for (let pageNum = 1; pageNum <= 5; pageNum++) {
+            let url = `https://www.amazon.com/s?page=${pageNum}`;
 
-                fetch(url)
-                    .then(response => response.text())
-                    .then(html => {
-                        let parser = new DOMParser();
-                        let doc = parser.parseFromString(html, 'text/html');
-                        let productElements = doc.querySelectorAll('div[data-asin]');
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    let parser = new DOMParser();
+                    let doc = parser.parseFromString(html, 'text/html');
+                    let productElements = doc.querySelectorAll('div[data-asin]');
 
-                        productElements.forEach(element => {
-                            let asin = getASIN(element);
-                            if (asin) {
-                                let productName = getProductName(element);
-                                productData.push({ asin, productName });
-                            }
-                        });
-
-                        if (pageNum === 5) {
-                            resolve(productData);
+                    productElements.forEach(element => {
+                        let asin = getASIN(element);
+                        if (asin) {
+                            let productName = getProductName(element);
+                            productData.push({ asin, productName });
                         }
-                    })
-                    .catch(error => {
-                        reject(error);
                     });
-            }
-        });
-    }
+
+                    if (pageNum === 5) {
+                        resolve(productData);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching page:', error);
+                    reject(error); // Hata durumunda promise'i reddet
+                });
+        }
+    });
+}
 
     // Buton oluşturma ve sayfaya ekleme
     function createButton() {
