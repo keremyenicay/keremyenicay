@@ -53,25 +53,40 @@ function displayData(productData) {
                     grid-template-columns: 1fr 2fr;
                     gap: 10px;
                 }
-                .data-table li {
-                    list-style: none;
+                .data-table .column {
                     padding: 10px;
                     border: 1px solid #ccc;
                     border-radius: 5px;
                     background-color: #f9f9f9;
+                    overflow-y: auto;
+                    max-height: 500px;
+                }
+                .data-table h2 {
+                    text-align: center;
+                    margin-bottom: 10px;
+                }
+                .data-table ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                .data-table li {
+                    margin-bottom: 5px;
+                    padding: 5px;
+                    border-bottom: 1px solid #ddd;
                 }
             </style>
         </head>
         <body>
             <h1>Amazon Ürün Bilgileri</h1>
             <div class="data-table">
-                <div>
+                <div class="column">
                     <h2>ASIN</h2>
                     <ul>
                         ${productData.map(item => `<li>${item.asin}</li>`).join('')}
                     </ul>
                 </div>
-                <div>
+                <div class="column">
                     <h2>Ürün Adı</h2>
                     <ul>
                         ${productData.map(item => `<li>${item.productName}</li>`).join('')}
@@ -85,6 +100,7 @@ function displayData(productData) {
     // Pencere içeriğini yaz
     popupWindow.document.write(content);
 }
+
 
 
     // Buton oluşturma ve sayfaya ekleme
