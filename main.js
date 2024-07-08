@@ -1,180 +1,150 @@
 // ==UserScript==
-// @name         Amazon ASIN ADAM Veri Kazıyıcı by Adnan
+// @name         Amazon Category ASIN Extractor
 // @namespace    http://tampermonkey.net/
-// @version      8.0
-// @description  Amazon sayfasından ASIN bilgisi dahil birçok veriyi tek tıkla karşına getir.
-// @author       Adnan Gökmen - Instagram: @adnangokmen_
-// @include      /^https?:\/\/(?:www\.)?amazon\.(com|co\.uk|de|fr|es|it|com\.au|nl|ca|in|co\.jp|com\.mx|com\.br|cn)\/.*/i
+// @version      1.0
+// @description  Extracts ASINs from specified Amazon product categories in the background.
+// @author       Your Name
+// @match        https://www.amazon.com.au/s?me=A33YPZRNNQ0YTU&marketplaceID=A39IBJ37TRP1C6*
 // @grant        GM_xmlhttpRequest
-// @require      https://code.jquery.com/jquery-3.6.0.min.js
+// @grant        GM_addStyle
+// @connect      amazon.com.au
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Örneğin belirttiğiniz path
-    let jsPath = '#departments > ul > span > span:nth-child(4)';
+    // Kategorilerin URL'lerini listele
+    const categories = {
+        "Category 1": "https://www.amazon.com.au/s?me=A33YPZRNNQ0YTU&marketplaceID=A39IBJ37TRP1C6&rh=n%3Acategory1",
+        "Category 2": "https://www.amazon.com.au/s?me=A33YPZRNNQ0YTU&marketplaceID=A39IBJ37TRP1C6&rh=n%3Acategory2",
+        // Diğer kategorileri buraya ekleyin
+    };
 
-    // ASIN ve ürün adını al
-    function getASIN(element) {
-        if (element && element.hasAttribute('data-asin')) {
-            return element.getAttribute('data-asin');
-        } else {
-            return null; // data-asin özniteliği yoksa null döndür
-        }
-    }
+    // ASIN'leri saklamak için bir dizi
+    let allAsins = [];
 
-    function getProductName(element) {
-        if (element) {
-            return element.querySelector('h2')?.textContent.trim() || 'Product name not found';
-        } else {
-            return 'Product element not found';
-        }
-    }
-
-    // ASIN'leri txt olarak kaydet
-    function saveAsinToFile(asins) {
-        let asinText = asins.join('\n');
-        let blob = new Blob([asinText], { type: 'text/plain' });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = 'asins.txt';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // Verileri ekranda göster
-    function displayData(productData) {
-        // Yeni bir div oluştur
-        let popupContainer = document.createElement('div');
-        popupContainer.id = 'popupContainer';
-        popupContainer.style.position = 'fixed';
-        popupContainer.style.top = '50%';
-        popupContainer.style.left = '50%';
-        popupContainer.style.transform = 'translate(-50%, -50%)';
-        popupContainer.style.backgroundColor = '#fff';
-        popupContainer.style.padding = '20px';
-        popupContainer.style.border = '1px solid #ccc';
-        popupContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
-        popupContainer.style.zIndex = '1000';
-        popupContainer.style.textAlign = 'center';
-
-        // ASIN bilgilerini içeren listeyi oluştur
-        let asins = productData.map(item => item.asin);
-        let asinList = document.createElement('ul');
-        asins.forEach(asin => {
-            let listItem = document.createElement('li');
-            listItem.textContent = asin;
-            asinList.appendChild(listItem);
-        });
-
-        popupContainer.appendChild(asinList);
-
-        // Kaydetme butonu oluştur
-        let saveButton = document.createElement('button');
-        saveButton.textContent = 'Kaydet';
-        saveButton.style.backgroundColor = '#4CAF50';
-        saveButton.style.color = 'white';
-        saveButton.style.padding = '10px 20px';
-        saveButton.style.border = 'none';
-        saveButton.style.cursor = 'pointer';
-        saveButton.style.borderRadius = '5px';
-        saveButton.addEventListener('click', function() {
-            saveAsinToFile(asins);
-        });
-
-        popupContainer.appendChild(saveButton);
-
-        // Kapatma butonu oluştur
-        let closeButton = document.createElement('button');
-        closeButton.textContent = 'Kapat';
-        closeButton.style.marginTop = '10px';
-        closeButton.style.cursor = 'pointer';
-        closeButton.addEventListener('click', function() {
-            popupContainer.remove();
-        });
-
-        // Butonları div içine ekle
-        popupContainer.appendChild(closeButton);
-
-        // Popup penceresini sayfaya ekle
-        document.body.appendChild(popupContainer);
-    }
-
-    // ASIN'leri arka planda çekmek için fonksiyon
-    async function fetchASINsInBackground(url) {
-        try {
-            let response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+    // Sayfa içinde ASIN'leri çıkarmak için fonksiyon
+    function getASINsFromPage(doc) {
+        let asins = [];
+        doc.querySelectorAll('div[data-asin]').forEach((el) => {
+            const asin = el.getAttribute('data-asin');
+            if (asin) {
+                asins.push(asin);
             }
-            let htmlString = await response.text();
-            let parser = new DOMParser();
-            let doc = parser.parseFromString(htmlString, 'text/html');
-            let productElements = doc.querySelectorAll('div[data-asin]');
-            let productData = [];
-
-            productElements.forEach(element => {
-                let asin = getASIN(element);
-                if (asin) {
-                    let productName = getProductName(element);
-                    productData.push({ asin, productName });
-                }
-            });
-
-            return productData;
-        } catch (error) {
-            throw new Error(`Error fetching ASINs: ${error.message}`);
-        }
+        });
+        return asins;
     }
 
-    // Buton oluşturma ve sayfaya ekleme
-    function createButton() {
-        // Buton oluştur
-        let button = document.createElement('button');
-        button.id = 'fetchDataButton';
-        button.textContent = 'Fetch ASIN Data';
+    // Bir kategori sayfasından ASIN'leri toplamak için fonksiyon
+    function fetchASINsFromCategory(url, page = 1) {
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: url + `&page=${page}`,
+            onload: function(response) {
+                if (response.status === 200) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(response.responseText, "text/html");
+                    const asins = getASINsFromPage(doc);
+                    allAsins = allAsins.concat(asins);
+                    console.log(`ASINs from ${url} (page ${page}):`, asins);
 
-        // Buton stilini ayarla
+                    // Bir sonraki sayfaya geçiş yapmak için
+                    const nextPageLink = doc.querySelector('li.a-last a');
+                    if (nextPageLink) {
+                        fetchASINsFromCategory(url, page + 1);
+                    } else {
+                        console.log('All ASINs:', allAsins);
+                    }
+                }
+            }
+        });
+    }
+
+    // Kullanıcı arayüzü oluşturma
+    function createUI() {
+        const button = document.createElement('button');
+        button.textContent = 'Extract ASINs';
         button.style.position = 'fixed';
         button.style.top = '10px';
         button.style.right = '10px';
-        button.style.padding = '10px';
-        button.style.backgroundColor = '#ff9900';
-        button.style.color = '#fff';
+        button.style.zIndex = '1000';
+        button.style.backgroundColor = '#FF9900';
+        button.style.color = 'white';
         button.style.border = 'none';
-        button.style.borderRadius = '5px';
-        button.style.zIndex = 1000;
+        button.style.padding = '10px';
         button.style.cursor = 'pointer';
-
-        // Butonu sayfaya ekle
         document.body.appendChild(button);
 
-        // Butona tıklama olayı ekle
-        button.addEventListener('click', async function() {
-            try {
-                let targetElement = document.querySelector(jsPath);
-                if (targetElement) {
-                    let currentURL = window.location.href;
-                    let productData = await fetchASINsInBackground(currentURL);
-                    if (productData.length > 0) {
-                        displayData(productData);
-                    } else {
-                        console.error("ASIN veya ürün adı bulunamadı.");
-                    }
-                } else {
-                    console.error('Target element not found for path:', jsPath);
-                }
-            } catch (error) {
-                console.error("Arka planda ASIN bilgileri çekilirken hata oluştu:", error);
+        button.addEventListener('click', () => {
+            showCategorySelection();
+        });
+    }
+
+    // Kategori seçimini göstermek için fonksiyon
+    function showCategorySelection() {
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        overlay.style.zIndex = '1000';
+
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.backgroundColor = 'white';
+        modal.style.padding = '20px';
+        modal.style.borderRadius = '10px';
+        modal.style.zIndex = '1001';
+
+        const title = document.createElement('h2');
+        title.textContent = 'Select Categories';
+        modal.appendChild(title);
+
+        const form = document.createElement('form');
+        Object.keys(categories).forEach(category => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = category;
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(category));
+            form.appendChild(label);
+            form.appendChild(document.createElement('br'));
+        });
+
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Start Extraction';
+        submitButton.style.marginTop = '10px';
+        form.appendChild(submitButton);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const selectedCategories = Array.from(form.querySelectorAll('input:checked')).map(input => input.value);
+            overlay.remove();
+            startExtraction(selectedCategories);
+        });
+
+        modal.appendChild(form);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    // Seçilen kategoriler için ASIN'leri toplama işlemini başlatma
+    function startExtraction(selectedCategories) {
+        allAsins = [];  // ASIN listesini temizle
+        selectedCategories.forEach(category => {
+            const url = categories[category];
+            if (url) {
+                fetchASINsFromCategory(url);
             }
         });
     }
 
-    // Sayfa yüklendiğinde butonu oluştur
-    window.addEventListener('load', function() {
-        createButton();
-    });
-
+    // Sayfa tamamen yüklendiğinde UI oluştur
+    window.addEventListener('load', createUI);
 })();
