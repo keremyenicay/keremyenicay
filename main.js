@@ -1,86 +1,63 @@
+// main.js
+
 (function() {
     'use strict';
 
-    function createCategorySelection() {
-        const categorySelectionHtml = `
-            <div id="categorySelection" style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; border:1px solid black; padding:10px; z-index:1000; max-height:80%; overflow-y:auto;">
-                <button id="closeCategorySelection" style="position:absolute; top:5px; right:5px;">X</button>
-                <h3>Kategori Seçimi</h3>
-                <div>
-                    <label><input type="checkbox" value="Automotive"> Automotive</label><br>
-                    <label><input type="checkbox" value="Baby"> Baby</label><br>
-                    <label><input type="checkbox" value="Beauty"> Beauty</label><br>
-                    <label><input type="checkbox" value="Books"> Books</label><br>
-                    <label><input type="checkbox" value="CDs & Vinyl"> CDs & Vinyl</label><br>
-                    <label><input type="checkbox" value="Clothing, Shoes & Accessories"> Clothing, Shoes & Accessories</label><br>
-                    <label><input type="checkbox" value="Computers"> Computers</label><br>
-                    <label><input type="checkbox" value="Electronics"> Electronics</label><br>
-                    <label><input type="checkbox" value="Everything Else"> Everything Else</label><br>
-                    <label><input type="checkbox" value="Garden"> Garden</label><br>
-                    <label><input type="checkbox" value="Health, Household & Personal Care"> Health, Household & Personal Care</label><br>
-                    <label><input type="checkbox" value="Home"> Home</label><br>
-                    <label><input type="checkbox" value="Home Improvement"> Home Improvement</label><br>
-                    <label><input type="checkbox" value="Kitchen & Dining"> Kitchen & Dining</label><br>
-                    <label><input type="checkbox" value="Lighting"> Lighting</label><br>
-                    <label><input type="checkbox" value="Musical Instruments"> Musical Instruments</label><br>
-                    <label><input type="checkbox" value="Pantry Food & Drinks"> Pantry Food & Drinks</label><br>
-                    <label><input type="checkbox" value="Pet Supplies"> Pet Supplies</label><br>
-                    <label><input type="checkbox" value="Sports, Fitness & Outdoors"> Sports, Fitness & Outdoors</label><br>
-                    <label><input type="checkbox" value="Stationery & Office Products"> Stationery & Office Products</label><br>
-                    <label><input type="checkbox" value="Toys & Games"> Toys & Games</label><br>
-                </div>
-                <button id="selectAllCategories">Tümünü Seç</button>
-                <button id="startScraping">Başlat</button>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', categorySelectionHtml);
-    }
+    function showCategorySelector() {
+        // Mevcut kategorileri toplama
+        let categories = Array.from(document.querySelectorAll('#departments ul li a'))
+            .map(a => ({ name: a.textContent.trim(), href: a.href }));
 
-    function addEventListeners() {
-        // Kapatma butonuna tıklama olayını ekle
-        document.getElementById('closeCategorySelection').addEventListener('click', () => {
-            document.getElementById('categorySelection').remove();
+        if (categories.length === 0) {
+            alert('Kategoriler bulunamadı.');
+            return;
+        }
+
+        // Arayüzü oluşturma
+        let container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '10%';
+        container.style.left = '10%';
+        container.style.width = '300px';
+        container.style.padding = '20px';
+        container.style.backgroundColor = 'white';
+        container.style.border = '1px solid #ccc';
+        container.style.zIndex = 10000;
+        container.style.maxHeight = '500px';
+        container.style.overflowY = 'auto';
+
+        // Kategorileri listeleme
+        categories.forEach(category => {
+            let checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = category.href;
+
+            let label = document.createElement('label');
+            label.style.display = 'block';
+            label.style.marginBottom = '5px';
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(' ' + category.name));
+
+            container.appendChild(label);
         });
 
-        // Tümünü Seç butonuna tıklama olayını ekle
-        document.getElementById('selectAllCategories').addEventListener('click', () => {
-            const checkboxes = document.querySelectorAll('#categorySelection input[type="checkbox"]');
-            checkboxes.forEach(checkbox => checkbox.checked = true);
+        // Kapatma düğmesi ekleme
+        let closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.style.marginTop = '10px';
+        closeButton.addEventListener('click', function() {
+            document.body.removeChild(container);
         });
+        container.appendChild(closeButton);
 
-        // Başlat butonuna tıklama olayını ekle
-        document.getElementById('startScraping').addEventListener('click', () => {
-            const selectedCategories = Array.from(document.querySelectorAll('#categorySelection input[type="checkbox"]:checked')).map(cb => cb.value);
-            if (selectedCategories.length === 0) {
-                alert('Lütfen en az bir kategori seçin.');
-                return;
-            }
-            scrapeASINs(selectedCategories);
-        });
+        document.body.appendChild(container);
     }
 
-    function scrapeASINs(categories) {
-        // Sayfadaki ürünlerin ASIN kodlarını topla
-        let asins = [];
-        let products = document.querySelectorAll('.s-main-slot .s-result-item');
+    // Tuş kombinasyonu: Alt + C ile betiği çalıştırma
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key === 'c') {
+            showCategorySelector();
+        }
+    });
 
-        products.forEach(product => {
-            let asin = product.getAttribute('data-asin');
-            let category = product.querySelector('.a-text-bold')?.textContent.trim();
-            if (asin && categories.includes(category)) {
-                asins.push(asin);
-            }
-        });
-
-        console.log('ASIN Kodları:', asins);
-        alert('ASIN Kodları: ' + asins.join(', '));
-    }
-
-    function init() {
-        createCategorySelection();
-        addEventListeners();
-    }
-
-    // Başlat
-    init();
 })();
