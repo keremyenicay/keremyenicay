@@ -3,8 +3,8 @@
 (function() {
     'use strict';
 
+    // Kategorileri göstermek için kullanılan fonksiyon
     function showCategorySelector() {
-        // Mevcut kategorileri toplama
         let categories = Array.from(document.querySelectorAll('#departments ul li a'))
             .map(a => ({ name: a.textContent.trim(), href: a.href }));
 
@@ -13,7 +13,6 @@
             return;
         }
 
-        // Arayüzü oluşturma
         let container = document.createElement('div');
         container.style.position = 'fixed';
         container.style.top = '10%';
@@ -26,7 +25,6 @@
         container.style.maxHeight = '500px';
         container.style.overflowY = 'auto';
 
-        // Kategorileri listeleme
         categories.forEach(category => {
             let checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
@@ -41,7 +39,6 @@
             container.appendChild(label);
         });
 
-        // Kapatma düğmesi ekleme
         let closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
         closeButton.style.marginTop = '10px';
@@ -53,11 +50,25 @@
         document.body.appendChild(container);
     }
 
-    // Tuş kombinasyonu: Alt + C ile betiği çalıştırma
-    document.addEventListener('keydown', function(event) {
-        if (event.altKey && event.key === 'c') {
-            showCategorySelector();
-        }
-    });
+    // Butonu sayfaya ekleme
+    function createButton() {
+        let button = document.createElement('button');
+        button.textContent = 'Show Categories';
+        button.style.position = 'fixed';
+        button.style.bottom = '10px';
+        button.style.right = '10px';
+        button.style.padding = '10px 20px';
+        button.style.backgroundColor = '#ff9900';
+        button.style.color = 'white';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.cursor = 'pointer';
+        button.style.zIndex = 10000;
 
+        button.addEventListener('click', showCategorySelector);
+        document.body.appendChild(button);
+    }
+
+    // Sayfa yüklendiğinde butonu oluştur
+    window.onload = createButton;
 })();
