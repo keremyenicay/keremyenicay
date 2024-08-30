@@ -6,8 +6,8 @@
         document.getElementsByTagName('head')[0].appendChild(script);
     }
 
-    // Butonu ekle
     $(document).ready(function() {
+        // Butonu ekle
         let button = $('<button id="scrapeButton">Kategorileri Getir</button>');
         button.css({
             position: 'fixed',
@@ -44,15 +44,16 @@
             $('#categoryPopup').html('<h3>Kategoriler:</h3>');
             $('#categoryPopup').show();
 
-            // Kategorileri burada ekle (örnek, gerçek veri çekme kodu değişebilir)
-            $('.s-navigation-item').each(function() {
-                let category = $(this).text().trim();
+            // Kategorileri al ve ekrana ekle
+            let categories = document.querySelectorAll("#departments ul li a");
+            categories.forEach(function(category) {
+                let categoryName = category.textContent.trim();
                 let checkbox = $('<input type="checkbox" class="categoryCheckbox" />');
-                let label = $('<label></label>').text(category);
+                let label = $('<label></label>').text(categoryName);
                 $('#categoryPopup').append(checkbox).append(label).append('<br/>');
             });
 
-            // İleri işlemleri burada belirle
+            // ASIN'leri çekme butonu ekle
             $('#categoryPopup').append('<button id="fetchAsins">ASIN Kodlarını Al</button>');
             $('#fetchAsins').click(function() {
                 let selectedCategories = [];
@@ -60,21 +61,19 @@
                     selectedCategories.push($(this).next('label').text());
                 });
 
-                // ASIN kodlarını almak için işlemler burada yapılır
-                // Örnek kod, ASIN'leri toplar
                 let asinList = [];
-                selectedCategories.forEach(function(category) {
-                    // Belirli bir kategori için ASIN'leri çek
-                    // TODO: Sayfaları dolaşarak ASIN'leri ekle
+                selectedCategories.forEach(function(categoryName) {
+                    // Burada ASIN'leri çekme işlemini yapabilirsiniz
+                    // TODO: Belirli bir kategoriye göre sayfaları dolaşıp ASIN'leri ekle
                 });
 
-                // ASIN'leri bir dosya olarak indir
+                // ASIN'leri CSV dosyası olarak indir
                 let csvContent = "data:text/csv;charset=utf-8," + asinList.join("\n");
                 let encodedUri = encodeURI(csvContent);
                 let link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
                 link.setAttribute("download", "asin_list.csv");
-                document.body.appendChild(link); // Required for FF
+                document.body.appendChild(link); // Required for Firefox
                 link.click();
             });
         });
