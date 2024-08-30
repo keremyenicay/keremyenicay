@@ -1,36 +1,30 @@
 (function() {
     'use strict';
 
-    function loadScript(url, callback) {
-        let script = document.createElement('script');
-        script.type = 'text/javascript';
-
-        if (script.readyState) { // IE için
-            script.onreadystatechange = function() {
-                if (script.readyState === 'loaded' || script.readyState === 'complete') {
-                    script.onreadystatechange = null;
-                    callback();
-                }
-            };
-        } else { // Diğer tarayıcılar için
+    // jQuery'nin yüklü olup olmadığını kontrol et
+    function loadJQuery(callback) {
+        if (typeof jQuery === 'undefined') {
+            let script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
             script.onload = function() {
+                console.log('jQuery yüklendi.');
                 callback();
             };
+            script.onerror = function() {
+                console.error('jQuery yüklenemedi.');
+            };
+            document.getElementsByTagName('head')[0].appendChild(script);
+        } else {
+            console.log('jQuery zaten yüklü.');
+            callback();
         }
-
-        script.src = url;
-        document.getElementsByTagName('head')[0].appendChild(script);
-    }
-
-    // jQuery yüklü değilse yükle ve sonra çalıştır
-    if (typeof jQuery == 'undefined') {
-        loadScript('https://code.jquery.com/jquery-3.6.0.min.js', main);
-    } else { 
-        main();
     }
 
     function main() {
         $(document).ready(function() {
+            console.log('jQuery hazır.');
+
             // Butonu ekle
             let button = $('<button id="scrapeButton">Kategorileri Getir</button>');
             button.css({
@@ -119,4 +113,7 @@
             });
         });
     }
+
+    // jQuery'yi yükle ve ardından ana fonksiyonu çalıştır
+    loadJQuery(main);
 })();
