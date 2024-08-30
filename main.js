@@ -44,13 +44,29 @@
             $('#categoryPopup').html('<h3>Kategoriler:</h3>');
             $('#categoryPopup').show();
 
+            // Kategorilerin olduğu bir kapsayıcı oluştur
+            let categoryContainer = $('<div id="categoryContainer"></div>');
+            categoryContainer.css({
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '10px'
+            });
+            $('#categoryPopup').append(categoryContainer);
+
             // Kategorileri al ve ekrana ekle
             let categories = document.querySelectorAll("#departments ul li a");
             categories.forEach(function(category) {
                 let categoryName = category.textContent.trim();
                 let checkbox = $('<input type="checkbox" class="categoryCheckbox" />');
                 let label = $('<label></label>').text(categoryName);
-                $('#categoryPopup').append(checkbox).append(label).append('<br/>');
+                
+                let categoryItem = $('<div class="categoryItem"></div>');
+                categoryItem.css({
+                    display: 'flex',
+                    alignItems: 'center'
+                });
+                categoryItem.append(checkbox).append(label);
+                categoryContainer.append(categoryItem);
             });
 
             // ASIN'leri çekme butonu ekle
